@@ -14,7 +14,7 @@ import { formatMarkdown, formatTaskSection } from "../src/format/markdown.js";
 import { formatRow, formatTaskTable } from "../src/format/table.js";
 import { utcNow } from "../src/shared/clock.js";
 import { assertNonEmpty, normalizeOptional } from "../src/shared/text.js";
-import { resolveDbPath } from "../src/storage/connection.js";
+import { resolveDbPath, withDatabase } from "../src/storage/connection.js";
 import { asNumber, asNullableString, asString, toTaskRow } from "../src/storage/row.js";
 import { buildTaskFilters } from "../src/storage/tasks.js";
 
@@ -110,6 +110,10 @@ test("path and text helpers normalize deterministic inputs", () => {
   assert.doesNotThrow(() => assertNonEmpty("name", "value"));
   assert.throws(() => assertNonEmpty("name", "  "), /name must not be empty/);
   assert.match(utcNow(), /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("database connection rejects stores that cannot use WAL", () => {
+  assert.throws(() => withDatabase(":memory:", () => undefined), /failed to enable SQLite WAL mode/);
 });
 
 test("row conversion validates sqlite row shape", () => {
