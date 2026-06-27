@@ -34,6 +34,20 @@ Pulse は、複数の AI coding agent と協調するための個人開発者向
 npm install
 ```
 
+## Local Command Setup
+
+`pulse add` や `pulse release` のように通常の command として実行する場合は、build して local link を作成します。
+
+```bash
+npm run link:local
+```
+
+これにより、この package の `bin.pulse` が global npm prefix に link されます。解除する場合は以下を実行します。
+
+```bash
+npm unlink -g pulse-shared-state
+```
+
 ## Verify
 
 ```bash
@@ -50,26 +64,26 @@ coverage は Node.js 標準 test runner の coverage gate を使い、`src/bin.t
 
 ## Usage
 
-開発中は `npm run dev -- ...` で CLI を実行できます。
+local link 後は `pulse ...` で実行できます。
 
 ```bash
-npm run dev -- --db /tmp/pulse.db init
-npm run dev -- --db /tmp/pulse.db add "Implement SQLite schema" --goal "MVP" --repo pulse --branch main
-npm run dev -- --db /tmp/pulse.db list
-npm run dev -- --db /tmp/pulse.db claim 1 --agent codex
-npm run dev -- --db /tmp/pulse.db beat 1 --agent codex --note "schema is in place"
-npm run dev -- --db /tmp/pulse.db block 1 --reason "waiting for product decision"
-npm run dev -- --db /tmp/pulse.db review 1 --note "ready for human review"
-npm run dev -- --db /tmp/pulse.db release 1
-npm run dev -- --db /tmp/pulse.db done 1 --note "merged"
-npm run dev -- --db /tmp/pulse.db export
+pulse --db /tmp/pulse.db init
+pulse --db /tmp/pulse.db add "Implement SQLite schema" --goal "MVP" --repo pulse --branch main
+pulse --db /tmp/pulse.db list
+pulse --db /tmp/pulse.db claim 1 --agent codex
+pulse --db /tmp/pulse.db beat 1 --agent codex --note "schema is in place"
+pulse --db /tmp/pulse.db block 1 --reason "waiting for product decision"
+pulse --db /tmp/pulse.db review 1 --note "ready for human review"
+pulse --db /tmp/pulse.db release 1
+pulse --db /tmp/pulse.db done 1 --note "merged"
+pulse --db /tmp/pulse.db export
 ```
 
-build 後は以下でも実行できます。
+link せずに build artifact を直接実行する場合は以下でも動きます。
 
 ```bash
 npm run build
-node --disable-warning=ExperimentalWarning build/src/bin.js --db /tmp/pulse.db list
+./build/src/bin.js --db /tmp/pulse.db list
 ```
 
 ## Database Location
@@ -93,7 +107,7 @@ SQLite database と schema を作成します。
 task を追加します。goal、context、agent、repo、worktree、branch を任意で記録できます。
 
 ```bash
-npm run dev -- add "Fix failing tests" --goal "Release" --context "CI fails on sqlite migration"
+pulse add "Fix failing tests" --goal "Release" --context "CI fails on sqlite migration"
 ```
 
 ### `pulse list`
@@ -101,9 +115,9 @@ npm run dev -- add "Fix failing tests" --goal "Release" --context "CI fails on s
 task を一覧します。status / agent で絞り込めます。
 
 ```bash
-npm run dev -- list --status blocked
-npm run dev -- list --agent codex
-npm run dev -- list --format json
+pulse list --status blocked
+pulse list --agent codex
+pulse list --format json
 ```
 
 ### `pulse claim` / `pulse release`
@@ -111,8 +125,8 @@ npm run dev -- list --format json
 task の担当 agent を設定、解除します。
 
 ```bash
-npm run dev -- claim 1 --agent codex
-npm run dev -- release 1
+pulse claim 1 --agent codex
+pulse release 1
 ```
 
 ### `pulse block` / `pulse review` / `pulse done`
@@ -120,9 +134,9 @@ npm run dev -- release 1
 task を blocked、review 待ち、done にします。
 
 ```bash
-npm run dev -- block 1 --reason "needs API decision"
-npm run dev -- review 1 --note "ready for human review"
-npm run dev -- done 1 --note "tests passed"
+pulse block 1 --reason "needs API decision"
+pulse review 1 --note "ready for human review"
+pulse done 1 --note "tests passed"
 ```
 
 ### `pulse beat`
@@ -130,7 +144,7 @@ npm run dev -- done 1 --note "tests passed"
 task heartbeat を更新します。agent がまだ動いていることを人間が確認するための signal です。
 
 ```bash
-npm run dev -- beat 1 --agent codex --note "working through review comments"
+pulse beat 1 --agent codex --note "working through review comments"
 ```
 
 ### `pulse export`
@@ -138,7 +152,7 @@ npm run dev -- beat 1 --agent codex --note "working through review comments"
 現在の状態を Markdown で出力します。
 
 ```bash
-npm run dev -- export > pulse-state.md
+pulse export > pulse-state.md
 ```
 
 ## Status Model
