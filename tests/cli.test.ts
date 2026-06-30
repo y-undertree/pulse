@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 
 import { dispatchCommand, errorMessage } from "../src/cli/app.js";
@@ -17,13 +18,14 @@ test("unknown command and invalid global options return actionable errors", () =
   assert.match(runMain("--db").stderr, /--db requires a value/);
 });
 
-test("init creates the database schema", () => {
+test("init creates the database schema and enables WAL", () => {
   const { dbPath, cleanup } = createDbPath();
   try {
     const result = runCli(dbPath, "init");
 
     assert.equal(result.code, 0, result.stderr);
     assert.match(result.stdout, /Initialized Pulse database/);
+    assert.equal(readJournalMode(dbPath), "wal");
   } finally {
     cleanup();
   }
@@ -195,3 +197,13 @@ test("errorMessage handles Error and non-Error values", () => {
   assert.equal(errorMessage(new Error("boom")), "boom");
   assert.equal(errorMessage("plain"), "plain");
 });
+
+function readJournalMode(dbPath: string): string {
+  const db = new DatabaseSync(dbPath);
+  try {
+    const row = db.prepare("PRAGMA journal_mode").get() as { readonly journal_mode: string };
+    return row.journal_mode;
+  } finally {
+    db.close();
+  }
+}

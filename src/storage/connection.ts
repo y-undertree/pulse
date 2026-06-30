@@ -29,10 +29,22 @@ export function initialize(dbPath: string): void {
 export function withDatabase<T>(dbPath: string, callback: (db: DatabaseSync) => T): T {
   mkdirSync(dirname(dbPath), { recursive: true });
   const db = new DatabaseSync(dbPath);
+  enableWalMode(db);
   db.exec("PRAGMA foreign_keys = ON");
   try {
     return callback(db);
   } finally {
     db.close();
+  }
+}
+
+interface JournalModeRow {
+  readonly journal_mode: string;
+}
+
+function enableWalMode(db: DatabaseSync): void {
+  const row = db.prepare("PRAGMA journal_mode = WAL").get() as unknown as JournalModeRow;
+  if (row.journal_mode !== "wal") {
+    throw new Error(`failed to enable SQLite WAL mode: journal_mode=${row.journal_mode}`);
   }
 }
