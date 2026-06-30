@@ -11,6 +11,7 @@ import {
 } from "../src/domain/task.js";
 import { formatJson } from "../src/format/json.js";
 import { formatMarkdown, formatTaskSection } from "../src/format/markdown.js";
+import { formatStatus, formatSummary } from "../src/format/observation.js";
 import { formatRow, formatTaskTable } from "../src/format/table.js";
 import { utcNow } from "../src/shared/clock.js";
 import { assertNonEmpty, normalizeOptional } from "../src/shared/text.js";
@@ -82,6 +83,47 @@ test("formatters render json, markdown, and tables", () => {
   assert.doesNotMatch(formatTaskSection(minimalTask).join("\n"), /Blocked reason/);
   assert.match(formatTaskTable([minimalTask]), /Task/);
   assert.equal(formatRow(["a"], [3]), "a  ");
+});
+
+test("observation formatters render empty and non-attention states", () => {
+  const todoTask: TaskRow = {
+    ...baseTask,
+    id: 2,
+    title: "Todo",
+    status: "todo",
+    goal: null,
+    context: null,
+    agent: null,
+    branch: null,
+    blocked_reason: null,
+    review_note: null,
+    last_heartbeat_at: null,
+  };
+
+  assert.match(formatStatus([]), /No tasks\./);
+  assert.match(formatSummary([]), /No tasks\./);
+
+  const status = formatStatus([todoTask]);
+  assert.match(status, /Attention\n- none/);
+  assert.match(status, /Active\n- none/);
+  assert.match(status, /Backlog\n- #2 \[todo\] Todo \| agent=- \| branch=- \| heartbeat=-/);
+  assert.match(status, /Done\n- none/);
+
+  const summary = formatSummary([todoTask]);
+  assert.match(summary, /Needs attention: none\./);
+  assert.match(summary, /Active agents: none\./);
+  assert.match(summary, /Next todo: #2 Todo\./);
+});
+
+test("summary reports no next todo when backlog is empty", () => {
+  const summary = formatSummary([baseTask]);
+  assert.match(summary, /Active agents: codex on #1 Task\./);
+  assert.match(summary, /Next todo: none\./);
+});
+
+test("summary renders claimed tasks without an agent defensively", () => {
+  const summary = formatSummary([{ ...baseTask, agent: null }]);
+  assert.match(summary, /Active agents: - on #1 Task\./);
 });
 
 test("parser handles positional and option variants", () => {

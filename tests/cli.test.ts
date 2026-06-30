@@ -10,7 +10,7 @@ import { createDbPath, runCli, runMain } from "./helpers.js";
 test("help is printed when no command or help flag is provided", () => {
   assert.match(runMain().stdout, /usage: pulse/);
   assert.match(runMain("--help").stdout, /SQLite shared state/);
-  assert.match(runMain("-h").stdout, /commands:/);
+  assert.match(runMain("-h").stdout, /status\s+Show an observation-focused task status/);
 });
 
 test("unknown command and invalid global options return actionable errors", () => {
@@ -127,6 +127,46 @@ test("list filters by status and agent, and table format is stable", () => {
   }
 });
 
+test("status and summary expose observation-focused views", () => {
+  const { dbPath, cleanup } = createDbPath();
+  try {
+    assert.match(runCli(dbPath, "status").stdout, /No tasks\./);
+    assert.match(runCli(dbPath, "summary").stdout, /No tasks\./);
+
+    runCli(dbPath, "add", "Active task", "--agent", "codex", "--branch", "main");
+    runCli(dbPath, "beat", "1", "--agent", "codex", "--note", "working");
+    runCli(dbPath, "add", "Blocked task", "--agent", "claude", "--branch", "fix");
+    runCli(dbPath, "block", "2", "--reason", "needs input");
+    runCli(dbPath, "add", "Review task");
+    runCli(dbPath, "review", "3", "--note", "ready");
+    runCli(dbPath, "add", "Todo task");
+    runCli(dbPath, "add", "Done task");
+    runCli(dbPath, "done", "5");
+
+    const status = runCli(dbPath, "status");
+    assert.equal(status.code, 0, status.stderr);
+    assert.match(status.stdout, /Pulse Status/);
+    assert.match(status.stdout, /Attention/);
+    assert.match(status.stdout, /#2 \[blocked\] Blocked task/);
+    assert.match(status.stdout, /#3 \[review\] Review task/);
+    assert.match(status.stdout, /Active/);
+    assert.match(status.stdout, /#1 \[claimed\] Active task/);
+    assert.match(status.stdout, /Backlog/);
+    assert.match(status.stdout, /#4 \[todo\] Todo task/);
+    assert.match(status.stdout, /Done/);
+    assert.match(status.stdout, /#5 \[done\] Done task/);
+
+    const summary = runCli(dbPath, "summary");
+    assert.equal(summary.code, 0, summary.stderr);
+    assert.match(summary.stdout, /5 task\(s\): 1 blocked, 1 review, 1 claimed, 1 todo, 1 done\./);
+    assert.match(summary.stdout, /Needs attention: #2 Blocked task; #3 Review task\./);
+    assert.match(summary.stdout, /Active agents: codex on #1 Active task\./);
+    assert.match(summary.stdout, /Next todo: #4 Todo task\./);
+  } finally {
+    cleanup();
+  }
+});
+
 test("export markdown contains empty and populated operational state", () => {
   const { dbPath, cleanup } = createDbPath();
   try {
@@ -165,6 +205,8 @@ test("command validation errors are reported through main", () => {
     assert.match(runCli(dbPath, "list", "--status", "paused").stderr, /status must be one of/);
     assert.match(runCli(dbPath, "list", "--agent").stderr, /--agent requires a value/);
     assert.match(runCli(dbPath, "init", "extra").stderr, /init expected 0 positional/);
+    assert.match(runCli(dbPath, "status", "extra").stderr, /status expected 0 positional/);
+    assert.match(runCli(dbPath, "summary", "extra").stderr, /summary expected 0 positional/);
   } finally {
     cleanup();
   }

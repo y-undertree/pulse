@@ -70,6 +70,8 @@ local link 後は `pulse ...` で実行できます。
 pulse --db /tmp/pulse.db init
 pulse --db /tmp/pulse.db add "Implement SQLite schema" --goal "MVP" --repo pulse --branch main
 pulse --db /tmp/pulse.db list
+pulse --db /tmp/pulse.db status
+pulse --db /tmp/pulse.db summary
 pulse --db /tmp/pulse.db claim 1 --agent codex
 pulse --db /tmp/pulse.db beat 1 --agent codex --note "schema is in place"
 pulse --db /tmp/pulse.db block 1 --reason "waiting for product decision"
@@ -120,6 +122,22 @@ pulse list --agent codex
 pulse list --format json
 ```
 
+### `pulse status`
+
+現在の状態を観測用に表示します。status count、attention 対象、active task、backlog、done を分けて表示します。
+
+```bash
+pulse status
+```
+
+### `pulse summary`
+
+現在の状態を短く共有するための要約を表示します。blocked / review の attention、active agent、次の todo を一目で確認できます。
+
+```bash
+pulse summary
+```
+
 ### `pulse claim` / `pulse release`
 
 task の担当 agent を設定、解除します。
@@ -166,3 +184,32 @@ MVP の status は意図的に小さく保ちます。
 - `done`: 完了
 
 各 command は `events` にも行を追加するため、chat history を開かなくても状態変化を追えます。
+
+## MVP Scope
+
+Pulse の MVP は、個人開発者が複数 AI agent の現在状態を手動で共有・観測できるところまでとします。
+
+MVP に含めるもの:
+
+- SQLite database の初期化
+- task の追加
+- agent claim / release
+- `todo` / `claimed` / `blocked` / `review` / `done` の状態管理
+- heartbeat 更新
+- repo / worktree / branch / context の記録
+- `pulse list` による機械可読 JSON と table 一覧
+- `pulse status` による観測用の現在状態表示
+- `pulse summary` による短い状況要約
+- `pulse export` による Markdown 出力
+- local command としての `pulse ...` 実行
+- 100% coverage gate 付きの `npm run verify`
+
+MVP に含めないもの:
+
+- agent process の自動検出
+- Git worktree / branch の自動 scan
+- chat history の自動要約取り込み
+- stale heartbeat の自動判定
+- TUI / dashboard
+- GitHub Issues / Pull Requests との同期
+- 複雑な workflow engine
