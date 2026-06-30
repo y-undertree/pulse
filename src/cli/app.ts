@@ -11,6 +11,7 @@ import {
 import { initialize } from "../storage/connection.js";
 import { formatJson } from "../format/json.js";
 import { formatMarkdown } from "../format/markdown.js";
+import { formatStatus, formatSummary } from "../format/observation.js";
 import { formatTaskTable } from "../format/table.js";
 
 import { helpText } from "./help.js";
@@ -58,6 +59,14 @@ export function dispatchCommand(
       return handleAdd(dbPath, commandArgs, io);
     case "list":
       return handleList(dbPath, commandArgs, io);
+    case "status":
+      ensureNoPositionals(parseArgs(commandArgs), "status");
+      io.stdout(formatStatus(listTasks(dbPath)));
+      return 0;
+    case "summary":
+      ensureNoPositionals(parseArgs(commandArgs), "summary");
+      io.stdout(formatSummary(listTasks(dbPath)));
+      return 0;
     case "claim":
       return handleClaim(dbPath, commandArgs, io);
     case "release":

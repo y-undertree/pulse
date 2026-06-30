@@ -1,5 +1,5 @@
 export function helpText(): string {
-  return `usage: pulse [--db DB] {init,add,list,claim,release,block,review,done,beat,export} ...
+  return `usage: pulse [--db DB] {init,add,list,status,summary,claim,release,block,review,done,beat,export} ...
 
 SQLite shared state for AI coding agents.
 
@@ -7,6 +7,8 @@ commands:
   init      Create the Pulse database.
   add       Add a task.
   list      List tasks.
+  status    Show an observation-focused task status.
+  summary   Show a concise operational summary.
   claim     Claim a task.
   release   Release a task.
   block     Mark a task as blocked.
