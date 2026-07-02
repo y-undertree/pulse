@@ -42,10 +42,24 @@ npm install
 npm run link:local
 ```
 
-これにより、この package の `bin.pulse` が global npm prefix に link されます。解除する場合は以下を実行します。
+これにより、この package の `bin.pulse` が global npm prefix に link され、同梱の Codex skill も `${CODEX_HOME:-~/.codex}/skills/pulse-shared-state` に install されます。CLI link を解除する場合は以下を実行します。
 
 ```bash
 npm unlink -g pulse-shared-state
+```
+
+Codex skill は上記では削除されません。不要になった場合は `${CODEX_HOME:-~/.codex}/skills/pulse-shared-state` を削除してください。
+
+skill だけを install する場合は以下を実行します。
+
+```bash
+npm run install:skill
+```
+
+install 先を明示する場合は `--skills-dir` を指定します。
+
+```bash
+npm run install:skill -- --skills-dir /path/to/codex/skills
 ```
 
 ## Verify

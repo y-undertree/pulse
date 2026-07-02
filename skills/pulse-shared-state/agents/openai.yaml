@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pulse Shared State"
+  short_description: "Coordinate AI agents with Pulse state"
+  default_prompt: "Use $pulse-shared-state to coordinate this repo task through Pulse."
