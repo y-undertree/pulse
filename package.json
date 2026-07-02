@@ -15,7 +15,8 @@
     "clean": "node -e \"require('node:fs').rmSync('build', { recursive: true, force: true })\"",
     "coverage": "node --disable-warning=ExperimentalWarning --import tsx --test --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 '--test-coverage-include=src/**/*.ts' --test-coverage-exclude=src/bin.ts 'tests/**/*.test.ts'",
     "dev": "node --disable-warning=ExperimentalWarning --import tsx src/bin.ts",
-    "link:local": "npm run build && npm link",
+    "install:skill": "node scripts/install-codex-skill.mjs",
+    "link:local": "npm run build && npm link && npm run install:skill",
     "test": "node --disable-warning=ExperimentalWarning --import tsx --test 'tests/**/*.test.ts'",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "verify": "npm run typecheck && npm run coverage && npm run build"
